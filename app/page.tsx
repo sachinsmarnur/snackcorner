@@ -1,10 +1,12 @@
   "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import jsPDF from 'jspdf';
 import { 
   ShoppingCart, 
   Star, 
@@ -23,6 +25,8 @@ import {
   ArrowUp
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function Home() {
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
@@ -30,6 +34,8 @@ export default function Home() {
   const [isProductsDialogOpen, setIsProductsDialogOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isGeneratingCatalog, setIsGeneratingCatalog] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     setIsClient(true);
@@ -77,6 +83,181 @@ export default function Home() {
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
+      });
+    }
+  };
+
+  const generateCatalogPDF = () => {
+    if (typeof window === 'undefined') return;
+    
+    setIsGeneratingCatalog(true);
+    
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      let yPosition = 20;
+
+      // Helper function to add text with line breaks
+      const addText = (text: string, x: number, y: number, options: any = {}) => {
+        const lines = doc.splitTextToSize(text, pageWidth - 40);
+        doc.text(lines, x, y);
+        return y + (lines.length * 6) + 5;
+      };
+
+      // Header
+      doc.setFontSize(24);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 140, 0); // Amber color
+      doc.text('Snack Corner', 20, yPosition);
+      
+      yPosition += 10;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text('Fresh Snacks & Beverages for Your Office', 20, yPosition);
+      
+      yPosition += 15;
+      doc.setFontSize(10);
+      doc.text('Premium Quality Since 2018 | Serving 200+ Offices Daily', 20, yPosition);
+      
+      yPosition += 20;
+
+      // Contact Information
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text('Contact Information', 20, yPosition);
+      yPosition += 10;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Phone: +91 98765 43210', 20, yPosition);
+      yPosition += 6;
+      doc.text('Email: orders@snackcorner.com', 20, yPosition);
+      yPosition += 6;
+      doc.text('Location: Bengaluru, Karnataka, India', 20, yPosition);
+      
+      yPosition += 15;
+
+      // Menu Categories
+      productCategories.forEach((category, categoryIndex) => {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 60) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        // Category Header
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 140, 0);
+        doc.text(category.name, 20, yPosition);
+        
+        yPosition += 8;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(100, 100, 100);
+        doc.text(category.description, 20, yPosition);
+        
+        yPosition += 10;
+
+        // Products in this category
+        category.products.forEach((product, productIndex) => {
+          if (yPosition > pageHeight - 30) {
+            doc.addPage();
+            yPosition = 20;
+          }
+
+          doc.setFontSize(11);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(0, 0, 0);
+          doc.text(product.name, 25, yPosition);
+          
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 100, 100);
+          doc.text(product.description, 25, yPosition + 5);
+          
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(255, 140, 0);
+          // Replace ₹ symbol with Rs. for proper PDF display
+          const priceText = product.price.replace('₹', 'Rs. ');
+          doc.text(priceText, pageWidth - 30, yPosition, { align: 'right' });
+          
+          yPosition += 15;
+        });
+
+        yPosition += 10;
+      });
+
+      // Benefits Section
+      if (yPosition > pageHeight - 80) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text('Why Choose Snack Corner?', 20, yPosition);
+      yPosition += 10;
+
+      benefits.forEach((benefit, index) => {
+        if (yPosition > pageHeight - 30) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 0);
+        
+        // Format as numbered list with inline description
+        const benefitText = `${index + 1}. ${benefit.title}: ${benefit.description}`;
+        doc.text(benefitText, 25, yPosition);
+        
+        yPosition += 12;
+      });
+
+      // Footer
+      if (yPosition > pageHeight - 40) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      yPosition += 20;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text('Thank you for choosing Snack Corner!', 20, yPosition);
+      yPosition += 6;
+      doc.text('Fresh snacks and hot beverages to keep you energized', 20, yPosition);
+      yPosition += 6;
+      doc.text('© 2025 Snack Corner. All rights reserved.', 20, yPosition);
+
+      // Save the PDF with dynamic year
+      const currentYear = new Date().getFullYear();
+      doc.save(`Snack-Corner-Catalog-${currentYear}.pdf`);
+      
+      setIsGeneratingCatalog(false);
+      
+      // Show success toast notification
+      toast({
+        title: "Catalog Downloaded Successfully!",
+        description: "Your Snack Corner catalog has been downloaded to your device.",
+        duration: 4000,
+      });
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setIsGeneratingCatalog(false);
+      toast({
+        title: "Error Generating Catalog",
+        description: "There was an error generating the catalog. Please try again.",
+        variant: "destructive",
+        duration: 4000,
       });
     }
   };
@@ -232,7 +413,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
       {/* Navigation */}
-      <nav className={`backdrop-blur-md border-b sticky top-0 z-50 transition-all duration-300 ${
+      <nav className={`backdrop-blur sticky top-0 z-50 transition-all duration-300 ${
         isClient && isScrolled 
           ? 'bg-white/95 border-amber-200 shadow-lg' 
           : 'bg-white/80 border-amber-100'
@@ -240,8 +421,14 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-2">
-              <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-2 rounded-xl">
-                <Coffee className="h-8 w-8 text-white" />
+              <div className="bg-gradient-to-r p-2 rounded-xl">
+                <Image 
+                  src="/Snack Corner.png" 
+                  alt="Snack Corner Logo" 
+                  width={32} 
+                  height={32} 
+                  className="rounded-lg"
+                />
               </div>
               <span className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
                 Snack Corner
@@ -304,9 +491,17 @@ export default function Home() {
                   size="lg"
                   variant="outline"
                   className="border-2 border-amber-500 text-amber-600 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 px-10 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                  onClick={handleRequestCatalog}
+                  onClick={generateCatalogPDF}
+                  disabled={isGeneratingCatalog}
                 >
-                  Request Catalog
+                  {isGeneratingCatalog ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-600 mr-2"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    'Download Catalog'
+                  )}
                 </Button>
               </div>
               <div className="flex items-center space-x-8 text-sm text-gray-700 font-medium">
@@ -746,7 +941,13 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-3 mb-6 md:mb-0">
               <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-3 rounded-xl">
-                <Coffee className="h-8 w-8 text-white" />
+                <Image 
+                  src="/Snack Corner.png" 
+                  alt="Snack Corner Logo" 
+                  width={32} 
+                  height={32} 
+                  className="rounded-lg"
+                />
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
                 Snack Corner
@@ -773,6 +974,9 @@ export default function Home() {
           <ArrowUp className="h-6 w-6 group-hover:animate-bounce" />
         </button>
       )}
+
+      {/* Toast Notifications */}
+      <Toaster />
     </div>
   );
 }
