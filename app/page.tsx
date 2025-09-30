@@ -22,7 +22,9 @@ import {
   Utensils,
   ChevronDown,
   ChevronUp,
-  ArrowUp
+  ArrowUp,
+  Menu,
+  X
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -35,6 +37,7 @@ export default function Home() {
   const [isClient, setIsClient] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isGeneratingCatalog, setIsGeneratingCatalog] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -47,6 +50,21 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Lock page scroll when mobile sidebar is open
+  useEffect(() => {
+    if (!isClient) return;
+    const { style } = document.body;
+    const previousOverflow = style.overflow;
+    if (isMobileMenuOpen) {
+      style.overflow = 'hidden';
+    } else {
+      style.overflow = previousOverflow || '';
+    }
+    return () => {
+      style.overflow = previousOverflow || '';
+    };
+  }, [isMobileMenuOpen, isClient]);
 
   const toggleCategory = (categoryId: number) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
@@ -85,6 +103,19 @@ export default function Home() {
         behavior: 'smooth'
       });
     }
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleMobileNavClick = (action: () => void) => {
+    action();
+    closeMobileMenu();
   };
 
   const generateCatalogPDF = () => {
@@ -434,6 +465,8 @@ export default function Home() {
                 Snack Corner
               </span>
             </div>
+            
+            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <a href="#products" className="text-gray-700 hover:text-amber-600 transition-all duration-300 font-medium relative group">
                 Products
@@ -452,9 +485,111 @@ export default function Home() {
                 Order Now
               </Button>
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <button
+                onClick={toggleMobileMenu}
+                className="p-2 rounded-lg text-gray-700 hover:text-amber-600 hover:bg-amber-50 transition-all duration-300"
+                aria-label="Toggle mobile menu"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </button>
+            </div>
           </div>
+
         </div>
       </nav>
+
+      {/* Mobile Sidebar */}
+      <div className={`md:hidden fixed inset-0 z-50 transition-all duration-300 ease-in-out ${
+        isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}>
+        {/* Backdrop */}
+        <div 
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={closeMobileMenu}
+        />
+        
+        {/* Sidebar */}
+        <div className={`absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+          <div className="flex flex-col h-full">
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between p-6 border-b border-amber-100">
+              <div className="flex items-center space-x-3">
+                <div className="bg-gradient-to-r p-2 rounded-xl">
+                  <Image 
+                    src="/Snack Corner.png" 
+                    alt="Snack Corner Logo" 
+                    width={32} 
+                    height={32} 
+                    className="rounded-lg"
+                  />
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                  Snack Corner
+                </span>
+              </div>
+              <button
+                onClick={closeMobileMenu}
+                className="p-2 rounded-lg text-gray-700 hover:text-amber-600 hover:bg-amber-50 transition-all duration-300"
+                aria-label="Close menu"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Sidebar Navigation */}
+            <div className="flex-1 p-6 space-y-2">
+              <a 
+                href="#products" 
+                className="block text-gray-700 hover:text-amber-600 hover:bg-amber-50 transition-all duration-300 font-medium py-4 px-4 rounded-xl"
+                onClick={() => handleMobileNavClick(scrollToProducts)}
+              >
+                Products
+              </a>
+              <a 
+                href="#about" 
+                className="block text-gray-700 hover:text-amber-600 hover:bg-amber-50 transition-all duration-300 font-medium py-4 px-4 rounded-xl"
+                onClick={() => handleMobileNavClick(() => {
+                  if (typeof window !== 'undefined') {
+                    const aboutSection = document.getElementById('about');
+                    if (aboutSection) {
+                      aboutSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }
+                })}
+              >
+                About
+              </a>
+              <a 
+                href="#contact" 
+                className="block text-gray-700 hover:text-amber-600 hover:bg-amber-50 transition-all duration-300 font-medium py-4 px-4 rounded-xl"
+                onClick={() => handleMobileNavClick(handleRequestCatalog)}
+              >
+                Contact
+              </a>
+            </div>
+
+            {/* Sidebar Footer */}
+            <div className="p-6 border-t border-amber-100">
+              <Button 
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                onClick={() => handleMobileNavClick(handleRequestCatalog)}
+              >
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Order Now
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Hero Section */}
       <section className="relative py-24 px-4 overflow-hidden">
@@ -940,9 +1075,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-3 mb-6 md:mb-0">
-              <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-3 rounded-xl">
+              <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-2 rounded-xl">
                 <Image 
-                  src="/Snack Corner.png" 
+                  src="/snack-corner-footer.png"
                   alt="Snack Corner Logo" 
                   width={32} 
                   height={32} 
