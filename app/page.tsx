@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,8 @@ import {
   Award,
   Utensils,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ArrowUp
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
@@ -27,10 +28,15 @@ export default function Home() {
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProductsDialogOpen, setIsProductsDialogOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 50);
+      setShowScrollTop(scrollY > 300);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -42,23 +48,36 @@ export default function Home() {
   };
 
   const scrollToProducts = () => {
-    const productsSection = document.getElementById('products');
-    if (productsSection) {
-      productsSection.scrollIntoView({ behavior: 'smooth' });
+    if (typeof window !== 'undefined') {
+      const productsSection = document.getElementById('products');
+      if (productsSection) {
+        productsSection.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
   const handleRequestCatalog = () => {
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
-      // Focus on the first input field after scrolling
-      setTimeout(() => {
-        const firstInput = contactSection.querySelector('input');
-        if (firstInput) {
-          firstInput.focus();
-        }
-      }, 500);
+    if (typeof window !== 'undefined') {
+      const contactSection = document.getElementById('contact');
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+        // Focus on the first input field after scrolling
+        setTimeout(() => {
+          const firstInput = contactSection.querySelector('input');
+          if (firstInput) {
+            firstInput.focus();
+          }
+        }, 500);
+      }
+    }
+  };
+
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -147,11 +166,74 @@ export default function Home() {
     }
   ];
 
+  const testimonials = [
+    {
+      id: 1,
+      name: "Priya Sharma",
+      role: "HR Manager",
+      company: "TechCorp Solutions",
+      image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150",
+      rating: 5,
+      text: "Snack Corner has been a game-changer for our office. The fresh tea and samosas keep our team energized throughout the day. Their punctual delivery and consistent quality make them our go-to choice.",
+      highlight: "Game-changer for our office"
+    },
+    {
+      id: 2,
+      name: "Rajesh Kumar",
+      role: "Operations Director",
+      company: "StartupHub India",
+      image: "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=150",
+      rating: 5,
+      text: "We order daily for our 50+ team members. The variety is amazing - from hot beverages to fresh bakery items. The team loves the quality and we love the competitive pricing for bulk orders.",
+      highlight: "Amazing variety for 50+ team"
+    },
+    {
+      id: 3,
+      name: "Anita Patel",
+      role: "Office Manager",
+      company: "FinanceFirst Ltd",
+      image: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150",
+      rating: 5,
+      text: "The customer service is exceptional. They remember our preferences and always deliver on time. The fresh lime soda and egg puffs are our team's favorites. Highly recommended!",
+      highlight: "Exceptional customer service"
+    },
+    {
+      id: 4,
+      name: "Vikram Singh",
+      role: "CEO",
+      company: "InnovateTech",
+      image: "https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?auto=compress&cs=tinysrgb&w=150",
+      rating: 5,
+      text: "For our client meetings and team events, Snack Corner provides the perfect catering solution. Professional service, delicious food, and they handle everything seamlessly.",
+      highlight: "Perfect for client meetings"
+    },
+    {
+      id: 5,
+      name: "Deepika Reddy",
+      role: "Admin Head",
+      company: "Global Services",
+      image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150",
+      rating: 5,
+      text: "We've been customers for over 2 years. The consistency in quality and the friendly service keeps us coming back. The masala chai is absolutely the best in the city!",
+      highlight: "Best masala chai in the city"
+    },
+    {
+      id: 6,
+      name: "Arjun Mehta",
+      role: "Team Lead",
+      company: "Digital Solutions",
+      image: "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=150",
+      rating: 5,
+      text: "The morning coffee and fresh bakery items are perfect for our early morning meetings. They understand our needs and always exceed expectations. Truly reliable partners!",
+      highlight: "Perfect for early morning meetings"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
       {/* Navigation */}
       <nav className={`backdrop-blur-md border-b sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled 
+        isClient && isScrolled 
           ? 'bg-white/95 border-amber-200 shadow-lg' 
           : 'bg-white/80 border-amber-100'
       }`}>
@@ -445,6 +527,111 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-24 px-4 bg-gradient-to-br from-gray-50 via-white to-amber-50 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-10 right-10 w-72 h-72 bg-gradient-to-br from-amber-200/20 to-orange-200/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 left-10 w-80 h-80 bg-gradient-to-br from-yellow-200/15 to-amber-200/15 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <Badge className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 hover:from-amber-200 hover:to-orange-200 border border-amber-200 shadow-sm mb-6">
+              <Star className="h-3 w-3 mr-1" />
+              Customer Reviews
+            </Badge>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              What Our Customers Say
+            </h2>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto font-medium leading-relaxed">
+              Don't just take our word for it. Here's what office managers and teams across the city have to say about Snack Corner.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {testimonials.map((testimonial, index) => (
+              <div 
+                key={testimonial.id}
+                className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-amber-100 flex flex-col h-full"
+                style={{
+                  animation: `fadeInUp 0.8s ease-out ${index * 0.1}s both`
+                }}
+              >
+                <div className="flex items-center mb-6">
+                  <div className="flex space-x-1 mr-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 text-amber-400 fill-amber-400" />
+                    ))}
+                  </div>
+                  <div className="text-sm font-semibold text-amber-600 bg-amber-100 px-3 py-1 rounded-full">
+                    {testimonial.rating}/5
+                  </div>
+                </div>
+                
+                <blockquote className="text-gray-700 mb-6 leading-relaxed font-medium">
+                  "{testimonial.text}"
+                </blockquote>
+                
+                <div className="flex items-center mb-4">
+                  <img 
+                    src={testimonial.image} 
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover mr-4 shadow-lg"
+                  />
+                  <div>
+                    <div className="font-bold text-gray-900 text-lg">{testimonial.name}</div>
+                    <div className="text-amber-600 font-semibold">{testimonial.role}</div>
+                    <div className="text-gray-600 text-sm">{testimonial.company}</div>
+                  </div>
+                </div>
+                
+                <div className="mt-auto">
+                  <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 text-center">
+                    <div className="text-sm font-semibold text-amber-800">
+                      "{testimonial.highlight}"
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Stats Section */}
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-10 shadow-2xl border border-amber-100">
+            <div className="grid md:grid-cols-4 gap-8 text-center">
+              <div className="space-y-2">
+                <div className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                  200+
+                </div>
+                <div className="text-gray-700 font-semibold">Happy Offices</div>
+                <div className="text-sm text-gray-600">Serving daily</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                  4.9/5
+                </div>
+                <div className="text-gray-700 font-semibold">Average Rating</div>
+                <div className="text-sm text-gray-600">Customer satisfaction</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                  50+
+                </div>
+                <div className="text-gray-700 font-semibold">Menu Items</div>
+                <div className="text-sm text-gray-600">Fresh daily</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                  5+
+                </div>
+                <div className="text-gray-700 font-semibold">Years Experience</div>
+                <div className="text-sm text-gray-600">Trusted service</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
       <section id="contact" className="py-24 px-4 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white relative overflow-hidden">
         <div className="absolute inset-0">
@@ -504,6 +691,7 @@ export default function Home() {
                       type="text" 
                       className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium"
                       placeholder="John"
+                      suppressHydrationWarning
                     />
                   </div>
                   <div>
@@ -512,6 +700,7 @@ export default function Home() {
                       type="text" 
                       className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium"
                       placeholder="Doe"
+                      suppressHydrationWarning
                     />
                   </div>
                 </div>
@@ -521,6 +710,7 @@ export default function Home() {
                     type="email" 
                     className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium"
                     placeholder="john@company.com"
+                    suppressHydrationWarning
                   />
                 </div>
                 <div>
@@ -529,6 +719,7 @@ export default function Home() {
                     type="text" 
                     className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium"
                     placeholder="Your Company"
+                    suppressHydrationWarning
                   />
                 </div>
                 <div>
@@ -537,6 +728,7 @@ export default function Home() {
                     rows={5} 
                     className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium resize-none"
                     placeholder="Tell us about your office snack and beverage needs..."
+                    suppressHydrationWarning
                   ></textarea>
                 </div>
                 <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-xl">
@@ -570,6 +762,17 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Scroll to Top Button */}
+      {isClient && showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-110 transition-all duration-300 group animate-in slide-in-from-bottom-4 fade-in-0"
+          aria-label="Scroll to top"
+        >
+          <ArrowUp className="h-6 w-6 group-hover:animate-bounce" />
+        </button>
+      )}
     </div>
   );
 }
