@@ -24,11 +24,13 @@ import {
   ChevronUp,
   ArrowUp,
   Menu,
-  X
+  X,
+  Store
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import SplashScreen from "@/components/SplashScreen";
 
 export default function Home() {
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
@@ -38,10 +40,23 @@ export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isGeneratingCatalog, setIsGeneratingCatalog] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     setIsClient(true);
+    
+    // Check if user has seen splash screen before
+    try {
+      const hasSeenSplash = localStorage.getItem('snack-corner-splash-seen');
+      if (!hasSeenSplash) {
+        setShowSplash(true);
+      }
+    } catch (error) {
+      // If localStorage is not available, show splash screen
+      setShowSplash(true);
+    }
+    
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setIsScrolled(scrollY > 50);
@@ -96,6 +111,15 @@ export default function Home() {
     }
   };
 
+  const handleVisitStore = () => {
+    if (typeof window !== 'undefined') {
+      const contactSection = document.getElementById('contact');
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   const scrollToTop = () => {
     if (typeof window !== 'undefined') {
       window.scrollTo({
@@ -117,6 +141,34 @@ export default function Home() {
     action();
     closeMobileMenu();
   };
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    // Mark that user has seen the splash screen
+    try {
+      localStorage.setItem('snack-corner-splash-seen', 'true');
+    } catch (error) {
+      // If localStorage is not available, silently continue
+      console.warn('localStorage not available');
+    }
+  };
+
+  // Utility function to reset splash screen (for testing purposes)
+  const resetSplashScreen = () => {
+    try {
+      localStorage.removeItem('snack-corner-splash-seen');
+      setShowSplash(true);
+    } catch (error) {
+      console.warn('localStorage not available');
+    }
+  };
+
+  // Make reset function available globally for testing
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).resetSplashScreen = resetSplashScreen;
+    }
+  }, []);
 
   const generateCatalogPDF = () => {
     if (typeof window === 'undefined') return;
@@ -442,7 +494,9 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
+    <>
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
       {/* Navigation */}
       <nav className={`backdrop-blur sticky top-0 z-50 transition-all duration-300 ${
         isClient && isScrolled 
@@ -480,9 +534,12 @@ export default function Home() {
                 Contact
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
               </a>
-              <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Order Now
+              <Button 
+                onClick={handleVisitStore}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                <Store className="h-4 w-4 mr-2" />
+                Visit Our Store
               </Button>
             </div>
 
@@ -581,10 +638,10 @@ export default function Home() {
             <div className="p-6 border-t border-amber-100">
               <Button 
                 className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={() => handleMobileNavClick(handleRequestCatalog)}
+                onClick={() => handleMobileNavClick(handleVisitStore)}
               >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Order Now
+                <Store className="h-4 w-4 mr-2" />
+                Visit Our Store
               </Button>
             </div>
           </div>
@@ -972,10 +1029,10 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-16 relative z-10">
             <div>
               <h2 className="text-4xl lg:text-5xl font-bold mb-8">
-                Ready to Satisfy Your Office Cravings?
+                Visit Our Store Today!
               </h2>
               <p className="text-xl text-gray-300 mb-12 font-medium leading-relaxed">
-                Contact us for bulk orders, or to set up a tasting session for your team.
+                Come experience our fresh snacks and hot beverages in person. Perfect for office breaks, meetings, and satisfying your cravings.
               </p>
               
               <div className="space-y-8">
@@ -1008,11 +1065,23 @@ export default function Home() {
                     <div className="text-gray-300 text-lg">Bengaluru, Karnataka India</div>
                   </div>
                 </div>
+                
+                <div className="flex items-center space-x-6 group">
+                  <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-4 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
+                    <Clock className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-lg">Store Hours</div>
+                    <div className="text-gray-300 text-lg">Mon-Sat: 10:00 AM - 6:00 PM</div>
+                    <div className="text-gray-300 text-sm">Sunday: 11:00 AM - 5:00 PM</div>
+                  </div>
+                </div>
               </div>
             </div>
             
             <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-10 shadow-2xl border border-amber-100">
-              <h3 className="text-3xl font-bold text-gray-900 mb-8">Get Started Today</h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-8">Plan Your Visit</h3>
+              <p className="text-gray-600 mb-6 font-medium">Let us know when you're planning to visit or if you have any special requirements.</p>
               <form className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -1057,12 +1126,12 @@ export default function Home() {
                   <textarea 
                     rows={5} 
                     className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium resize-none"
-                    placeholder="Tell us about your office snack and beverage needs..."
+                    placeholder="Tell us about your visit plans, office snack needs, or any special requirements..."
                     suppressHydrationWarning
                   ></textarea>
                 </div>
                 <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-xl">
-                  Send Message
+                  Plan My Visit
                 </Button>
               </form>
             </div>
@@ -1112,6 +1181,7 @@ export default function Home() {
 
       {/* Toast Notifications */}
       <Toaster />
-    </div>
+      </div>
+    </>
   );
 }
