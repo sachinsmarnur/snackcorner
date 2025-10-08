@@ -1,6 +1,6 @@
-  "use client";
+"use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,8 +20,6 @@ import {
   Coffee,
   Award,
   Utensils,
-  ChevronDown,
-  ChevronUp,
   ArrowUp,
   Menu,
   X,
@@ -41,6 +39,18 @@ export default function Home() {
   const [isGeneratingCatalog, setIsGeneratingCatalog] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(false);
+  const [formData, setFormData] = useState<{
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+  }>({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: ''
+  });
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -151,6 +161,81 @@ export default function Home() {
       // If localStorage is not available, silently continue
       console.warn('localStorage not available');
     }
+  };
+
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+    let isValid = true;
+
+    if (!formData.firstName.trim()) {
+      errors.firstName = 'First name is required';
+      isValid = false;
+    }
+
+    if (!formData.lastName.trim()) {
+      errors.lastName = 'Last name is required';
+      isValid = false;
+    }
+
+    if (!formData.phone.trim()) {
+      errors.phone = 'Phone number is required';
+      isValid = false;
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required';
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    // Clear error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      toast({
+        title: "Please fill out all required fields",
+        description: "All fields marked with * are required to plan your visit.",
+        variant: "destructive",
+        duration: 4000,
+      });
+      return;
+    }
+
+    // If form is valid, show success message
+    toast({
+      title: "Visit Planned Successfully!",
+      description: "Thank you for your interest. We'll contact you soon to confirm your visit.",
+      duration: 4000,
+    });
+
+    // Reset form
+    setFormData({
+      firstName: '',
+      lastName: '',
+      phone: '',
+      email: ''
+    });
+    setFormErrors({});
   };
 
   // Utility function to reset splash screen (for testing purposes)
@@ -349,60 +434,64 @@ export default function Home() {
     {
       id: 1,
       name: "Hot Beverages",
-      description: "Fresh tea, coffee, and specialty hot drinks",
+      description: "Premium tea & coffee brewed fresh every 30 minutes",
       image: "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=800",
       badge: "Bestseller",
+      uniqueFeatures: "Brewed fresh every 30 minutes • Premium tea leaves • No artificial flavors",
       products: [
-        { name: "Masala Chai", price: "₹15", description: "Traditional spiced tea with milk" },
-        { name: "Filter Coffee", price: "₹10", description: "South Indian style filter coffee" },
-        { name: "Black Tea", price: "₹12", description: "Fresh brewed black tea" },
-        { name: "Green Tea", price: "₹20", description: "Healthy green tea with antioxidants" },
-        { name: "Ginger Tea", price: "₹15", description: "Refreshing ginger-infused tea" },
-        { name: "Lemon Tea", price: "₹15", description: "Zesty lemon tea for freshness" }
+        { name: "Masala Chai", price: "₹15", description: "Traditional spiced tea with fresh ginger, cardamom & premium tea leaves" },
+        { name: "Filter Coffee", price: "₹10", description: "Authentic South Indian filter coffee with fresh milk" },
+        { name: "Black Tea", price: "₹12", description: "Premium Assam tea leaves, no artificial flavors" },
+        { name: "Green Tea", price: "₹20", description: "Organic green tea with antioxidants & health benefits" },
+        { name: "Ginger Tea", price: "₹15", description: "Fresh ginger-infused tea with natural honey" },
+        { name: "Lemon Tea", price: "₹15", description: "Fresh lemon with premium tea, no artificial lemon flavor" }
       ]
     },
     {
       id: 2,
       name: "Fresh Bakery",
-      description: "Soft buns, bread, and freshly baked items",
+      description: "Baked fresh every morning with premium ingredients",
       image: "https://images.pexels.com/photos/1775043/pexels-photo-1775043.jpeg?auto=compress&cs=tinysrgb&w=800",
       badge: "New",
+      uniqueFeatures: "Baked fresh daily • Premium flour • No preservatives • Soft & fluffy texture",
       products: [
-        { name: "Pav Buns", price: "₹15", description: "Soft and fluffy pav buns" },
-        { name: "Sandwich Bread", price: "₹30", description: "Fresh white bread loaf" },
-        { name: "Dinner Rolls", price: "₹15", description: "Small soft dinner rolls" },
-        { name: "Garlic Bread", price: "₹45", description: "Toasted bread with garlic butter" },
-        { name: "Brown Bread", price: "₹40", description: "Healthy whole wheat bread" },
-        { name: "Burger Buns", price: "₹35", description: "Perfect buns for burgers" }
+        { name: "Pav Buns", price: "₹15", description: "Soft and fluffy pav buns, perfect for vada pav" },
+        { name: "Sandwich Bread", price: "₹30", description: "Fresh white bread loaf, ideal for sandwiches" },
+        { name: "Dinner Rolls", price: "₹15", description: "Small soft dinner rolls, great for breakfast" },
+        { name: "Garlic Bread", price: "₹45", description: "Toasted bread with fresh garlic butter & herbs" },
+        { name: "Brown Bread", price: "₹40", description: "Healthy whole wheat bread with fiber" },
+        { name: "Burger Buns", price: "₹35", description: "Perfect buns for burgers, soft and sturdy" }
       ]
     },
     {
       id: 3,
       name: "Fried Snacks",
-      description: "Crispy samosas, puffs, and savory treats",
+      description: "Hot & crispy snacks made fresh every hour",
       image: "https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg?auto=compress&cs=tinysrgb&w=800",
       badge: "Hot & Fresh",
+      uniqueFeatures: "Made fresh every hour • Premium oil • Crispy texture • No reheating",
       products: [
-        { name: "Samosa", price: "₹20", description: "Crispy triangular pastry with spiced vegetables" },
-        { name: "Egg Puff", price: "₹25", description: "Golden puff pastry with boiled egg filling" },
-        { name: "Veg Puff", price: "₹20", description: "Crispy puff with mixed vegetable filling" },
-        { name: "Aloo Bonda", price: "₹20", description: "Deep-fried potato fritters" },
-        { name: "Onion Pakoda", price: "₹25", description: "Crispy onion fritters with spices" }
+        { name: "Samosa", price: "₹20", description: "Crispy triangular pastry with spiced vegetables & fresh coriander" },
+        { name: "Egg Puff", price: "₹25", description: "Golden puff pastry with boiled egg filling & spices" },
+        { name: "Veg Puff", price: "₹20", description: "Crispy puff with mixed vegetable filling & herbs" },
+        { name: "Aloo Bonda", price: "₹20", description: "Deep-fried potato fritters with curry leaves" },
+        { name: "Onion Pakoda", price: "₹25", description: "Crispy onion fritters with spices & green chilies" }
       ]
     },
     {
       id: 4,
       name: "Cold Drinks",
-      description: "Refreshing beverages and chilled drinks",
+      description: "Fresh & chilled beverages made to order",
       image: "https://images.pexels.com/photos/1304540/pexels-photo-1304540.jpeg?auto=compress&cs=tinysrgb&w=800",
       badge: "Refreshing",
+      uniqueFeatures: "Made fresh to order • Natural ingredients • No artificial colors • Perfectly chilled",
       products: [
-        { name: "Fresh Lime Soda", price: "₹30", description: "Refreshing lime soda with mint" },
-        { name: "Mango Lassi", price: "₹60", description: "Creamy mango yogurt drink" },
-        { name: "Buttermilk", price: "₹30", description: "Spiced yogurt drink with curry leaves" },
-        { name: "Iced Tea", price: "₹40", description: "Chilled tea with lemon and mint" },
-        { name: "Fresh Fruit Juice", price: "₹80", description: "Seasonal fresh fruit juices" },
-        { name: "Cold Coffee", price: "₹50", description: "Iced coffee with milk and sugar" }
+        { name: "Fresh Lime Soda", price: "₹30", description: "Refreshing lime soda with fresh mint & ice" },
+        { name: "Mango Lassi", price: "₹60", description: "Creamy mango yogurt drink with fresh mango pulp" },
+        { name: "Buttermilk", price: "₹30", description: "Spiced yogurt drink with curry leaves & cumin" },
+        { name: "Iced Tea", price: "₹40", description: "Chilled tea with fresh lemon and mint leaves" },
+        { name: "Fresh Fruit Juice", price: "₹80", description: "Seasonal fresh fruit juices, no artificial flavors" },
+        { name: "Cold Coffee", price: "₹50", description: "Iced coffee with fresh milk and natural sugar" }
       ]
     }
   ];
@@ -757,7 +846,7 @@ export default function Home() {
           <div className="space-y-8">
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {productCategories.map((category) => (
-              <Card key={category.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-0 shadow-lg hover:-translate-y-3 bg-gradient-to-br from-white to-gray-50">
+              <Card key={category.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-0 shadow-lg hover:-translate-y-3 bg-gradient-to-br from-white to-gray-50 flex flex-col h-full">
                   <div className="relative overflow-hidden">
                     <img 
                       src={category.image} 
@@ -769,15 +858,23 @@ export default function Home() {
                       {category.badge}
                     </Badge>
                   </div>
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-3 flex-grow">
                     <CardTitle className="text-xl font-bold group-hover:text-amber-600 transition-colors duration-300">
                       {category.name}
                     </CardTitle>
                     <CardDescription className="text-gray-600 font-medium">
                       {category.description}
                     </CardDescription>
+                    <div className="mt-3">
+                      <div className="text-sm text-amber-700 font-semibold mb-2">Unique Features:</div>
+                      <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-100">
+                        <div className="text-sm text-gray-600 leading-relaxed">
+                          {category.uniqueFeatures}
+                        </div>
+                      </div>
+                    </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="mt-auto">
                     <Button 
                       className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold"
                       onClick={() => toggleCategory(category.id)}
@@ -799,6 +896,14 @@ export default function Home() {
                   <DialogDescription>
                     Choose from our freshly prepared {productCategories.find(cat => cat.id === expandedCategory)?.name?.toLowerCase()}
                   </DialogDescription>
+                  {productCategories.find(cat => cat.id === expandedCategory)?.uniqueFeatures && (
+                    <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+                      <div className="text-sm text-amber-700 font-semibold mb-2">Unique Features:</div>
+                      <div className="text-sm text-gray-600 leading-relaxed">
+                        {productCategories.find(cat => cat.id === expandedCategory)?.uniqueFeatures}
+                      </div>
+                    </div>
+                  )}
                 </DialogHeader>
                 <div className="p-2 sm:p-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -856,8 +961,8 @@ export default function Home() {
                   animation: `fadeInUp 0.8s ease-out ${index * 0.2}s both`
                 }}
               >
-                <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-4 w-20 h-20 mx-auto mb-6 shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-                  <div className="text-white flex items-center justify-center">
+                <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-4 w-20 h-20 mx-auto mb-6 shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 flex items-center justify-center">
+                  <div className="text-white flex items-center justify-center w-full h-full">
                     {benefit.icon}
                   </div>
                 </div>
@@ -955,7 +1060,7 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <blockquote className="text-gray-700 mb-6 leading-relaxed font-medium">
+                <blockquote className="text-gray-700 mb-6 leading-relaxed font-medium flex-grow">
                   "{testimonial.text}"
                 </blockquote>
                 
@@ -1082,55 +1187,94 @@ export default function Home() {
             <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-10 shadow-2xl border border-amber-100">
               <h3 className="text-3xl font-bold text-gray-900 mb-8">Plan Your Visit</h3>
               <p className="text-gray-600 mb-6 font-medium">Let us know when you're planning to visit or if you have any special requirements.</p>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleFormSubmit}>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">First Name</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">First Name <span className="text-red-500">*</span></label>
                     <input 
                       type="text" 
-                      className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium"
-                      placeholder="John"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      className={`w-full px-5 py-4 border-2 rounded-xl focus:ring-2 focus:ring-amber-500 transition-all duration-300 font-medium text-gray-900 ${
+                        formErrors.firstName 
+                          ? 'border-red-500 focus:border-red-500' 
+                          : 'border-gray-200 focus:border-amber-500'
+                      }`}
+                      placeholder="Your first name"
                       suppressHydrationWarning
                     />
+                    {formErrors.firstName && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.firstName}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Last Name</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Last Name <span className="text-red-500">*</span></label>
                     <input 
                       type="text" 
-                      className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium"
-                      placeholder="Doe"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      className={`w-full px-5 py-4 border-2 rounded-xl focus:ring-2 focus:ring-amber-500 transition-all duration-300 font-medium text-gray-900 ${
+                        formErrors.lastName 
+                          ? 'border-red-500 focus:border-red-500' 
+                          : 'border-gray-200 focus:border-amber-500'
+                      }`}
+                      placeholder="Your last name"
                       suppressHydrationWarning
                     />
+                    {formErrors.lastName && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.lastName}</p>
+                    )}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Company Email</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Phone Number <span className="text-red-500">*</span></label>
                   <input 
-                    type="email" 
-                    className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium"
-                    placeholder="john@company.com"
+                    type="tel" 
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    className={`w-full px-5 py-4 border-2 rounded-xl focus:ring-2 focus:ring-amber-500 transition-all duration-300 font-medium text-gray-900 ${
+                      formErrors.phone 
+                        ? 'border-red-500 focus:border-red-500' 
+                        : 'border-gray-200 focus:border-amber-500'
+                    }`}
+                    placeholder="Your Ph no"
                     suppressHydrationWarning
                   />
+                  {formErrors.phone && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Company Name</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Email <span className="text-red-500">*</span></label>
                   <input 
-                    type="text" 
-                    className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium"
-                    placeholder="Your Company"
+                    type="email" 
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className={`w-full px-5 py-4 border-2 rounded-xl focus:ring-2 focus:ring-amber-500 transition-all duration-300 font-medium text-gray-900 ${
+                      formErrors.email 
+                        ? 'border-red-500 focus:border-red-500' 
+                        : 'border-gray-200 focus:border-amber-500'
+                    }`}
+                    placeholder="example@gmail.com"
                     suppressHydrationWarning
                   />
+                  {formErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Message</label>
                   <textarea 
                     rows={5} 
-                    className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium resize-none"
+                    className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 font-medium resize-none text-gray-900"
                     placeholder="Tell us about your visit plans, office snack needs, or any special requirements..."
                     suppressHydrationWarning
                   ></textarea>
                 </div>
-                <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-xl">
+                <Button 
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-xl"
+                >
                   Plan My Visit
                 </Button>
               </form>
@@ -1158,12 +1302,12 @@ export default function Home() {
               </span>
             </div>
             <div className="text-gray-400 text-base font-medium">
-              © 2025 Snack Corner. Fresh snacks and beverages.
+            Serving fresh snacks and hot beverages to keep you energized
             </div>
           </div>
           <Separator className="my-8 bg-gray-700" />
           <div className="text-center text-gray-400 text-base font-medium">
-            Serving fresh snacks and hot beverages to keep you energized
+            © 2025 Snack Corner. Fresh snacks and beverages.
           </div>
         </div>
       </footer>
