@@ -17,7 +17,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Coffee,
   Award,
   Utensils,
   ArrowUp,
@@ -31,6 +30,17 @@ import { Toaster } from "@/components/ui/toaster";
 import SplashScreen from "@/components/SplashScreen";
 
 export default function Home() {
+  // Store location coordinates - Update these to change the map location
+  const STORE_LATITUDE = 13.104147;
+  const STORE_LONGITUDE = 77.571690;
+  const STORE_ADDRESS = "123 Business District, Bengaluru, Karnataka 560001";
+  
+  // Store hours configuration
+  const STORE_HOURS = {
+    weekdays: { open: 10, close: 18 }, // 10:00 AM - 6:00 PM
+    sunday: { open: 11, close: 17 }    // 11:00 AM - 5:00 PM
+  };
+  
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProductsDialogOpen, setIsProductsDialogOpen] = useState(false);
@@ -39,6 +49,8 @@ export default function Home() {
   const [isGeneratingCatalog, setIsGeneratingCatalog] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(false);
+  const [isMapsDialogOpen, setIsMapsDialogOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [formData, setFormData] = useState<{
     firstName: string;
     lastName: string;
@@ -52,6 +64,23 @@ export default function Home() {
   });
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
   const { toast } = useToast();
+
+  // Function to check if store is currently open
+  const isStoreOpen = () => {
+    const currentDay = currentTime.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const currentHour = currentTime.getHours();
+    
+    // Check if it's Sunday
+    if (currentDay === 0) {
+      return currentHour >= STORE_HOURS.sunday.open && currentHour < STORE_HOURS.sunday.close;
+    } 
+    // Check if it's a weekday (Monday to Saturday)
+    else if (currentDay >= 1 && currentDay <= 6) {
+      return currentHour >= STORE_HOURS.weekdays.open && currentHour < STORE_HOURS.weekdays.close;
+    }
+    
+    return false;
+  };
 
   useEffect(() => {
     setIsClient(true);
@@ -74,6 +103,15 @@ export default function Home() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Update time every minute to refresh store status
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
   }, []);
 
   // Lock page scroll when mobile sidebar is open
@@ -122,12 +160,7 @@ export default function Home() {
   };
 
   const handleVisitStore = () => {
-    if (typeof window !== 'undefined') {
-      const contactSection = document.getElementById('contact');
-      if (contactSection) {
-        contactSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
+    setIsMapsDialogOpen(true);
   };
 
   const scrollToTop = () => {
@@ -180,14 +213,40 @@ export default function Home() {
     if (!formData.phone.trim()) {
       errors.phone = 'Phone number is required';
       isValid = false;
+    } else {
+      // Remove all non-numeric characters for validation
+      const phoneDigits = formData.phone.replace(/\D/g, '');
+      if (phoneDigits.length < 10) {
+        errors.phone = 'Phone number must be at least 10 digits';
+        isValid = false;
+      } else if (phoneDigits.length > 15) {
+        errors.phone = 'Phone number must not exceed 15 digits';
+        isValid = false;
+      }
     }
 
     if (!formData.email.trim()) {
       errors.email = 'Email is required';
       isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Please enter a valid email address';
-      isValid = false;
+    } else {
+      // Enhanced email validation with more robust regex
+      const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+      if (!emailRegex.test(formData.email)) {
+        errors.email = 'Please enter a valid email address';
+        isValid = false;
+      } else {
+        // Additional validation for common temporary email domains
+        const tempEmailDomains = [
+          '10minutemail.com', 'tempmail.org', 'guerrillamail.com', 'mailinator.com',
+          'yopmail.com', 'temp-mail.org', 'throwaway.email', 'getnada.com',
+          'maildrop.cc', 'sharklasers.com', 'guerrillamailblock.com'
+        ];
+        const emailDomain = formData.email.split('@')[1]?.toLowerCase();
+        if (tempEmailDomains.includes(emailDomain)) {
+          errors.email = 'Please use a valid business or personal email address';
+          isValid = false;
+        }
+      }
     }
 
     setFormErrors(errors);
@@ -195,9 +254,17 @@ export default function Home() {
   };
 
   const handleInputChange = (field: string, value: string) => {
+    let processedValue = value;
+    
+    // For phone field, only allow numeric characters and common phone formatting characters
+    if (field === 'phone') {
+      // Allow only numbers, spaces, hyphens, parentheses, and plus sign
+      processedValue = value.replace(/[^0-9\s\-\(\)\+]/g, '');
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: processedValue
     }));
     // Clear error when user starts typing
     if (formErrors[field]) {
@@ -932,6 +999,127 @@ export default function Home() {
                 </div>
               </DialogContent>
             </Dialog>
+            
+            {/* Google Maps Dialog */}
+            <Dialog open={isMapsDialogOpen} onOpenChange={setIsMapsDialogOpen}>
+              <DialogContent className="w-[95vw] max-w-[95vw] sm:w-full sm:max-w-4xl lg:max-w-5xl max-h-[85vh] overflow-y-auto">
+                <DialogHeader className="relative">
+                  <div className="pr-12">
+                    <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
+                      <MapPin className="h-6 w-6 mr-2 text-amber-600" />
+                      Visit Our Store
+                    </DialogTitle>
+                    <DialogDescription className="text-lg text-gray-600 mt-2">
+                      Find us at our convenient location in Bengaluru. We're here to serve you fresh snacks and hot beverages!
+                    </DialogDescription>
+                  </div>
+                </DialogHeader>
+                <div className="space-y-6 p-1">
+                  {/* Store Information */}
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">Store Details</h3>
+                        <div className="space-y-3">
+                          <div className="flex items-center space-x-3">
+                            <MapPin className="h-5 w-5 text-amber-600" />
+                            <div>
+                              <div className="font-semibold text-gray-900">Address</div>
+                              <div className="text-gray-600">{STORE_ADDRESS}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <Clock className="h-5 w-5 text-amber-600" />
+                            <div>
+                              <div className="font-semibold text-gray-900">Store Hours</div>
+                              <div className="text-gray-600">Mon-Sat: 10:00 AM - 6:00 PM</div>
+                              <div className="text-gray-600">Sunday: 11:00 AM - 5:00 PM</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <Phone className="h-5 w-5 text-amber-600" />
+                            <div>
+                              <div className="font-semibold text-gray-900">Phone</div>
+                              <div className="text-gray-600">+91 98765 43210</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
+                        <div className="space-y-3">
+                          <Button 
+                            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                            onClick={() => {
+                              window.open(`https://maps.google.com/?q=${STORE_LATITUDE},${STORE_LONGITUDE}`, '_blank');
+                            }}
+                          >
+                            <MapPin className="h-4 w-4 mr-2" />
+                            Open in Google Maps
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="w-full border-amber-500 text-amber-600 hover:bg-amber-50"
+                            onClick={() => {
+                              window.open('tel:+919876543210', '_self');
+                            }}
+                          >
+                            <Phone className="h-4 w-4 mr-2" />
+                            Call Store
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Embedded Google Maps */}
+                  <div className="relative w-full h-96 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                    <iframe
+                      src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.0!2d${STORE_LONGITUDE}!3d${STORE_LATITUDE}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTPCsDA2JzE0LjkiTiA3N8KwMzQnMTguMSJF!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Snack Corner Store Location"
+                      className="rounded-xl"
+                    />
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded-full ${isStoreOpen() ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                        <span className={`text-sm font-semibold ${isStoreOpen() ? 'text-green-700' : 'text-red-700'}`}>
+                          {isStoreOpen() ? "We're Open" : "We're Closed"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Directions and Additional Info */}
+                  <div className="bg-white rounded-xl p-6 border border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Getting Here</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">By Public Transport</h4>
+                        <ul className="text-sm text-gray-600 space-y-1">
+                          <li>• Nearest Metro: MG Road Station (5 min walk)</li>
+                          <li>• Bus Stop: Business District (2 min walk)</li>
+                          <li>• Auto Rickshaw: Available from metro station</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">By Car</h4>
+                        <ul className="text-sm text-gray-600 space-y-1">
+                          <li>• Parking available in building basement</li>
+                          <li>• Valet parking on weekends</li>
+                          <li>• Easy access from main road</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </section>
@@ -1185,7 +1373,7 @@ export default function Home() {
             </div>
             
             <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-10 shadow-2xl border border-amber-100">
-              <h3 className="text-3xl font-bold text-gray-900 mb-8">Plan Your Visit</h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-8">Contact Us</h3>
               <p className="text-gray-600 mb-6 font-medium">Let us know when you're planning to visit or if you have any special requirements.</p>
               <form className="space-y-6" onSubmit={handleFormSubmit}>
                 <div className="grid md:grid-cols-2 gap-6">
@@ -1237,7 +1425,10 @@ export default function Home() {
                         ? 'border-red-500 focus:border-red-500' 
                         : 'border-gray-200 focus:border-amber-500'
                     }`}
-                    placeholder="Your Ph no"
+                    placeholder="+91 98765 43210"
+                    pattern="[0-9\s\-\(\)\+]*"
+                    inputMode="tel"
+                    maxLength={20}
                     suppressHydrationWarning
                   />
                   {formErrors.phone && (
@@ -1275,7 +1466,7 @@ export default function Home() {
                   type="submit"
                   className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-xl"
                 >
-                  Plan My Visit
+                  Submit
                 </Button>
               </form>
             </div>
