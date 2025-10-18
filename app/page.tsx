@@ -532,7 +532,7 @@ export default function Home() {
     },
     {
       id: 3,
-      name: "Fried Snacks",
+      name: "Everyday Snacks",
       description: "Hot & crispy snacks made fresh every hour",
       image: "https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg?auto=compress&cs=tinysrgb&w=800",
       badge: "Hot & Fresh",
