@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import SplashScreen from "@/components/SplashScreen";
+import GoogleReviewSection from "@/components/GoogleReviewSection";
 
 export default function Home() {
   // Store location coordinates - Update these to change the map location
@@ -686,6 +687,10 @@ export default function Home() {
                 About
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
               </a>
+              <a href="#reviews" className="text-gray-700 hover:text-amber-600 transition-all duration-300 font-medium relative group">
+                Reviews
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
+              </a>
               <a href="#contact" className="text-gray-700 hover:text-amber-600 transition-all duration-300 font-medium relative group">
                 Contact
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
@@ -780,6 +785,20 @@ export default function Home() {
                 })}
               >
                 About
+              </a>
+              <a 
+                href="#reviews" 
+                className="block text-gray-700 hover:text-amber-600 hover:bg-amber-50 transition-all duration-300 font-medium py-4 px-4 rounded-xl"
+                onClick={() => handleMobileNavClick(() => {
+                  if (typeof window !== 'undefined') {
+                    const reviewsSection = document.getElementById('reviews');
+                    if (reviewsSection) {
+                      reviewsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }
+                })}
+              >
+                Reviews
               </a>
               <a 
                 href="#contact" 
@@ -1311,6 +1330,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Google Review Section */}
+      {/* To update the review URL, edit the googleReviewUrl prop in GoogleReviewSection component */}
+      <GoogleReviewSection />
 
       {/* Contact Section */}
       <section id="contact" className="py-24 px-4 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white relative overflow-hidden">
