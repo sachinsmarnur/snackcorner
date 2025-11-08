@@ -36,6 +36,32 @@ export default function Home() {
   const STORE_LONGITUDE = 77.571690;
   const STORE_ADDRESS = "123 Business District, Bengaluru, Karnataka 560001";
   
+  // Helper function to render stars with support for half stars
+  const renderStars = (rating: number) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    const emptyStars = 5 - Math.ceil(rating);
+    
+    return (
+      <>
+        {[...Array(fullStars)].map((_, i) => (
+          <Star key={`full-${i}`} className="h-4 w-4 text-amber-400 fill-amber-400" />
+        ))}
+        {hasHalfStar && (
+          <div className="relative h-4 w-4 inline-block">
+            <Star className="h-4 w-4 text-amber-400 fill-none absolute inset-0" />
+            <div className="absolute inset-0 overflow-hidden" style={{ width: '50%' }}>
+              <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+            </div>
+          </div>
+        )}
+        {[...Array(emptyStars)].map((_, i) => (
+          <Star key={`empty-${i}`} className="h-4 w-4 text-amber-400 fill-none" />
+        ))}
+      </>
+    );
+  };
+  
   // Store hours configuration
   const STORE_HOURS = {
     weekdays: { open: 10, close: 18 }, // 10:00 AM - 6:00 PM
@@ -604,7 +630,7 @@ export default function Home() {
       role: "Operations Director",
       company: "StartupHub India",
       image: "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=150",
-      rating: 5,
+      rating: 4.5,
       text: "We order daily for our 50+ team members. The variety is amazing - from hot beverages to fresh bakery items. The team loves the quality and we love the competitive pricing for bulk orders.",
       highlight: "Amazing variety for 50+ team"
     },
@@ -634,7 +660,7 @@ export default function Home() {
       role: "Admin Head",
       company: "Global Services",
       image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150",
-      rating: 5,
+      rating: 4.5,
       text: "We've been customers for over 2 years. The consistency in quality and the friendly service keeps us coming back. The masala chai is absolutely the best in the city!",
       highlight: "Best masala chai in the city"
     },
@@ -647,6 +673,46 @@ export default function Home() {
       rating: 5,
       text: "The morning coffee and fresh bakery items are perfect for our early morning meetings. They understand our needs and always exceed expectations. Truly reliable partners!",
       highlight: "Perfect for early morning meetings"
+    },
+    {
+      id: 7,
+      name: "Kavita Nair",
+      role: "Facilities Manager",
+      company: "Corporate Hub",
+      image: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150",
+      rating: 4.5,
+      text: "Snack Corner's bulk ordering system is fantastic. We place weekly orders for 100+ employees and everything arrives fresh and on time. The pricing is very reasonable for corporate orders.",
+      highlight: "Fantastic bulk ordering system"
+    },
+    {
+      id: 8,
+      name: "Rohit Agarwal",
+      role: "Founder",
+      company: "TechStart Ventures",
+      image: "https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?auto=compress&cs=tinysrgb&w=150",
+      rating: 5,
+      text: "As a startup, we needed a reliable snack partner. Snack Corner has exceeded all expectations. The quality is consistent, prices are fair, and the team is always friendly and accommodating.",
+      highlight: "Exceeded all expectations"
+    },
+    {
+      id: 9,
+      name: "Meera Desai",
+      role: "Operations Manager",
+      company: "Service Excellence Corp",
+      image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150",
+      rating: 4.5,
+      text: "The variety of snacks and beverages keeps our team happy. From traditional samosas to modern cold drinks, they have it all. The freshness is unmatched and delivery is always prompt.",
+      highlight: "Unmatched freshness"
+    },
+    {
+      id: 10,
+      name: "Suresh Menon",
+      role: "General Manager",
+      company: "Enterprise Solutions",
+      image: "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=150",
+      rating: 5,
+      text: "We've tried many vendors, but Snack Corner stands out. Their attention to detail, quality ingredients, and professional service make them our preferred choice. Highly recommended for any office!",
+      highlight: "Stands out from the rest"
     }
   ];
 
@@ -672,9 +738,12 @@ export default function Home() {
                   className="rounded-lg"
                 />
               </div>
-              <span className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                Snack Corner
-              </span>
+              <div className="flex flex-col">
+                <span className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                  Snack Corner
+                </span>
+                <p className="text-xs text-gray-600 font-medium">Snacks & Beverages</p>
+              </div>
             </div>
             
             {/* Desktop Navigation */}
@@ -750,9 +819,12 @@ export default function Home() {
                     className="rounded-lg"
                   />
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                  Snack Corner
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                    Snack Corner
+                  </span>
+                  <p className="text-xs text-gray-600 font-medium">Snacks & Beverages</p>
+                </div>
               </div>
               <button
                 onClick={closeMobileMenu}
@@ -837,8 +909,8 @@ export default function Home() {
                   Premium Quality Since 2018
                 </Badge>
                 <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 leading-tight">
-                  Elevate Your
-                  <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent block">Office Breaks</span>
+                  Taste The
+                  <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent block">Extraordinary</span>
                 </h1>
                 <p className="text-xl text-gray-700 leading-relaxed max-w-lg font-medium">
                   Delicious snacks, fresh tea & coffee, and tasty treats. 
@@ -882,7 +954,7 @@ export default function Home() {
                   <div className="bg-gradient-to-r from-blue-400 to-blue-500 p-1 rounded-full mr-2">
                     <Users className="h-3 w-3 text-white" />
                   </div>
-                  <span>200+ Offices</span>
+                  <span>Customer Satisfaction</span>
                 </div>
                 <div className="flex items-center">
                   <div className="bg-gradient-to-r from-green-400 to-green-500 p-1 rounded-full mr-2">
@@ -1247,64 +1319,108 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {testimonials.map((testimonial, index) => (
-              <div 
-                key={testimonial.id}
-                className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-amber-100 flex flex-col h-full"
-                style={{
-                  animation: `fadeInUp 0.8s ease-out ${index * 0.1}s both`
-                }}
-              >
-                <div className="flex items-center mb-6">
-                  <div className="flex space-x-1 mr-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-amber-400 fill-amber-400" />
-                    ))}
-                  </div>
-                  <div className="text-sm font-semibold text-amber-600 bg-amber-100 px-3 py-1 rounded-full">
-                    {testimonial.rating}/5
-                  </div>
-                </div>
-                
-                <blockquote className="text-gray-700 mb-6 leading-relaxed font-medium flex-grow">
-                  "{testimonial.text}"
-                </blockquote>
-                
-                <div className="flex items-center mb-4">
-                  <img 
-                    src={testimonial.image} 
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover mr-4 shadow-lg"
-                  />
-                  <div>
-                    <div className="font-bold text-gray-900 text-lg">{testimonial.name}</div>
-                    <div className="text-amber-600 font-semibold">{testimonial.role}</div>
-                    <div className="text-gray-600 text-sm">{testimonial.company}</div>
-                  </div>
-                </div>
-                
-                <div className="mt-auto">
-                  <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 text-center">
-                    <div className="text-sm font-semibold text-amber-800">
-                      "{testimonial.highlight}"
+          {/* Marquee Animation - Two Rows */}
+          <div className="mb-16 space-y-6">
+            {/* Top Row - Right to Left */}
+            <div className="overflow-hidden relative">
+              <div className="marquee-container marquee-right-to-left">
+                {[...testimonials, ...testimonials].map((testimonial, index) => (
+                  <div 
+                    key={`top-${testimonial.id}-${index}`}
+                    className="flex-shrink-0 w-[350px] sm:w-[400px] md:w-[450px] mx-4"
+                  >
+                    <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-amber-100 flex flex-col h-full">
+                      <div className="flex items-center mb-4">
+                        <div className="flex space-x-1 mr-4">
+                          {renderStars(testimonial.rating)}
+                        </div>
+                        <div className="text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-1 rounded-full">
+                          {testimonial.rating}/5
+                        </div>
+                      </div>
+                      
+                      <blockquote className="text-gray-700 mb-4 leading-relaxed font-medium flex-grow text-sm">
+                        "{testimonial.text}"
+                      </blockquote>
+                      
+                      <div className="flex items-center mb-3">
+                        <img 
+                          src={testimonial.image} 
+                          alt={testimonial.name}
+                          className="w-10 h-10 rounded-full object-cover mr-3 shadow-lg"
+                        />
+                        <div>
+                          <div className="font-bold text-gray-900 text-base">{testimonial.name}</div>
+                          <div className="text-amber-600 font-semibold text-xs">{testimonial.role}</div>
+                          <div className="text-gray-600 text-xs">{testimonial.company}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-auto">
+                        <div className="p-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 text-center">
+                          <div className="text-xs font-semibold text-amber-800">
+                            "{testimonial.highlight}"
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Bottom Row - Left to Right */}
+            <div className="overflow-hidden relative">
+              <div className="marquee-container marquee-left-to-right">
+                {[...testimonials, ...testimonials].map((testimonial, index) => (
+                  <div 
+                    key={`bottom-${testimonial.id}-${index}`}
+                    className="flex-shrink-0 w-[350px] sm:w-[400px] md:w-[450px] mx-4"
+                  >
+                    <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-amber-100 flex flex-col h-full">
+                      <div className="flex items-center mb-4">
+                        <div className="flex space-x-1 mr-4">
+                          {renderStars(testimonial.rating)}
+                        </div>
+                        <div className="text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-1 rounded-full">
+                          {testimonial.rating}/5
+                        </div>
+                      </div>
+                      
+                      <blockquote className="text-gray-700 mb-4 leading-relaxed font-medium flex-grow text-sm">
+                        "{testimonial.text}"
+                      </blockquote>
+                      
+                      <div className="flex items-center mb-3">
+                        <img 
+                          src={testimonial.image} 
+                          alt={testimonial.name}
+                          className="w-10 h-10 rounded-full object-cover mr-3 shadow-lg"
+                        />
+                        <div>
+                          <div className="font-bold text-gray-900 text-base">{testimonial.name}</div>
+                          <div className="text-amber-600 font-semibold text-xs">{testimonial.role}</div>
+                          <div className="text-gray-600 text-xs">{testimonial.company}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-auto">
+                        <div className="p-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 text-center">
+                          <div className="text-xs font-semibold text-amber-800">
+                            "{testimonial.highlight}"
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Stats Section */}
           <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-10 shadow-2xl border border-amber-100">
-            <div className="grid md:grid-cols-4 gap-8 text-center">
-              <div className="space-y-2">
-                <div className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                  200+
-                </div>
-                <div className="text-gray-700 font-semibold">Happy Offices</div>
-                <div className="text-sm text-gray-600">Serving daily</div>
-              </div>
+            <div className="grid md:grid-cols-3 gap-8 text-center">
               <div className="space-y-2">
                 <div className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
                   4.9/5
@@ -1511,17 +1627,20 @@ export default function Home() {
                   className="rounded-lg"
                 />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-                Snack Corner
-              </span>
+              <div className="flex flex-col">
+                <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                  Snack Corner
+                </span>
+                <p className="text-xs text-gray-600 font-medium">Snacks & Beverages</p>
+              </div>
             </div>
             <div className="text-gray-400 text-base font-medium">
-            Serving fresh snacks and hot beverages to keep you energized
+            Taste the difference, feel the love.
             </div>
           </div>
           <Separator className="my-8 bg-gray-700" />
           <div className="text-center text-gray-400 text-base font-medium">
-            © 2025 Snack Corner. Fresh snacks and beverages.
+            © 2025 Snack Corner. All rights reserved.
           </div>
         </div>
       </footer>

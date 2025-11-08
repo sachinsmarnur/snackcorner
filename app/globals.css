@@ -210,3 +210,35 @@ html {
 .animate-glow {
   animation: glow 2s ease-in-out infinite;
 }
+
+/* Marquee animations */
+@keyframes marquee-right-to-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-left-to-right {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.marquee-container {
+  display: flex;
+  width: fit-content;
+}
+
+.marquee-right-to-left {
+  animation: marquee-right-to-left 60s linear infinite;
+}
+
+.marquee-left-to-right {
+  animation: marquee-left-to-right 60s linear infinite;
+}
