@@ -489,6 +489,7 @@ export default function Home() {
         yPosition = 20;
       }
 
+      const currentYear = new Date().getFullYear();
       yPosition += 20;
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
@@ -497,10 +498,9 @@ export default function Home() {
       yPosition += 6;
       doc.text('Fresh snacks and hot beverages to keep you energized', 20, yPosition);
       yPosition += 6;
-      doc.text('© 2025 Snack Corner. All rights reserved.', 20, yPosition);
+      doc.text(`© ${currentYear} Snack Corner. All rights reserved.`, 20, yPosition);
 
-      // Save the PDF with dynamic year
-      const currentYear = new Date().getFullYear();
+      // Save the PDF with dynamic year 
       doc.save(`Snack-Corner-Catalog-${currentYear}.pdf`);
       
       setIsGeneratingCatalog(false);
@@ -1640,7 +1640,7 @@ export default function Home() {
           </div>
           <Separator className="my-8 bg-gray-700" />
           <div className="text-center text-gray-400 text-base font-medium">
-            © 2025 Snack Corner. All rights reserved.
+            © {new Date().getFullYear()} Snack Corner. All rights reserved.
           </div>
         </div>
       </footer>
